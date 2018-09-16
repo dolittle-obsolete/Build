@@ -1,0 +1,1 @@
+static string version = "0.0.0";
