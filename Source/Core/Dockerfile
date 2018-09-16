@@ -4,8 +4,11 @@ RUN apt-get update && \
     apt-get -y install rsync
 
 ENV PATH="/root/.dotnet/tools:${PATH}"
-VOLUME [ "/repository" ]
-ARG SOURCE=/source
+ENV REPOSITORY=
+ENV COMMIT=
+ENV SOURCE=/source
+ENV CAKEFILE=/build/build.cake
+ENV CAKE_OPTIONS=
 
 ADD packages.props /build/
 ADD build.csproj /build/
@@ -17,8 +20,7 @@ RUN dotnet tool install --global Cake.Tool &&\
 
 ADD *.cake /build/
 
-WORKDIR /source/
-
-CMD echo Copy repository &&\
-    rsync -rt /repository/ /source/ &&\
-    dotnet cake /build/_build.cake --verbosity=Diagnostic
+#CMD echo Copy repository &&\
+#    rsync -rt /repository/ /source/ &&\
+CMD echo Run with ${CAKEFILE} && \
+    dotnet cake ${CAKEFILE} --repository=${REPOSITORY} --commit=${COMMIT} ${CAKE_OPTIONS} --verbosity=Verbose
