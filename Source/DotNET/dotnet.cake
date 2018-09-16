@@ -20,5 +20,17 @@ Task("Build")
     .IsDependentOn("Common")
     .Does(() => 
 {
-    Information("Build");
+    DotNetCoreRestore(globals.source_path);
+    DotNetCoreBuild(globals.source_path, new DotNetCoreBuildSettings 
+    {
+        Configuration = "Release",
+        OutputDirectory = "/artifacts",
+        NoRestore = true
+    });
+
+    var projectFiles = GetFiles($"{globals.source_path}/Specifications/**/*.csproj");
+    DotNetCoreVSTest(projectFiles,new DotNetCoreVSTestSettings 
+    {
+        Parallel = true
+    });
 });
