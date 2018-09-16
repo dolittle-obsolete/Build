@@ -5,7 +5,7 @@ public class globals
 
     public static void Initialize(ICakeContext context)
     {
-        source_path = context.Argument("sourcePath", "/source");
+        source_path = context.Argument("source_path", "/source");
 
         context.Information($"Source is located in ${source_path}");
     }
