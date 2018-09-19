@@ -24,13 +24,24 @@ Task("CloneAndCheckout")
         }
     });
 
+Task("Checkout")
+    .Does(() =>
+    {
+        if (!string.IsNullOrEmpty(globals.commit))
+        {
+            Information($"Checking out to {globals.commit}");
+            GitCheckout(globals.source_path, globals.commit);
+        }
+    });
+
+
 Task("Globals")
     .Does(globals.Initialize);
 
 Task("Common")
     .IsDependentOn("Globals")
-    .IsDependentOn("CloneAndCheckout")
-    .IsDependentOn("GetVersionFromGit")
+    .IsDependentOn("Checkout")
+    //.IsDependentOn("GetVersionFromGit")
     .Does(() =>
     {
         Information($"Version is {globals.version}");

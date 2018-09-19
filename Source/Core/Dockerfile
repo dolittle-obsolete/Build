@@ -7,6 +7,7 @@ ENV PATH="/root/.dotnet/tools:${PATH}"
 ENV REPOSITORY=
 ENV COMMIT=
 ENV SOURCE=/source
+ENV VERSION=1.0.0
 ENV CAKEFILE=/build/build.cake
 ENV CAKE_OPTIONS=
 
@@ -20,7 +21,9 @@ RUN dotnet tool install --global Cake.Tool &&\
 
 ADD *.cake /build/
 
-#CMD echo Copy repository &&\
-#    rsync -rt /repository/ /source/ &&\
-CMD echo Run with ${CAKEFILE} && \
-    dotnet cake ${CAKEFILE} --repository=${REPOSITORY} --commit=${COMMIT} ${CAKE_OPTIONS} --verbosity=Verbose
+VOLUME [ "/repository", "/packages", "/output", "/publish", "/testresults" ]
+
+CMD echo Copy repository >> /output/log.txt &&\
+    rsync -rt /repository/ /source/ >> /output/log.txt &&\
+    echo Run with ${CAKEFILE} >> /output/log.txt && \
+    dotnet cake ${CAKEFILE} --repository=${REPOSITORY} --commit=${COMMIT} ${CAKE_OPTIONS} --verbosity=Verbose >> /output/log.txt
