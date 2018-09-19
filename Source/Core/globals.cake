@@ -10,6 +10,7 @@ public class globals
         source_path = context.Argument("source_path", "/source");
         repository = context.Argument("repository", "");
         commit = context.Argument("commit", "");
+        version = context.EnvironmentVariable("VERSION") ?? "1.0.0";
 
         context.Information($"Repository to build: ${repository}");
         context.Information($"Source is located in ${source_path}");
