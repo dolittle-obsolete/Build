@@ -1,14 +1,7 @@
 #addin nuget:?package=Cake.Git&version=0.19.0
-#load "versioning.cake"
 #load "globals.cake"
 
 var target = Argument("target", "Default");
-
-/*
-- Copy entire folder from /repository to /source
-- Checkout specific commit
-- Get Git Version
- */
 
 Task("CloneAndCheckout")
     .Does(() =>
@@ -41,7 +34,6 @@ Task("Globals")
 Task("Common")
     .IsDependentOn("Globals")
     .IsDependentOn("Checkout")
-    //.IsDependentOn("GetVersionFromGit")
     .Does(() =>
     {
         Information($"Version is {globals.version}");
