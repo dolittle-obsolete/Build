@@ -1,5 +1,10 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Dolittle. All rights reserved.
+ *  Licensed under the MIT License. See LICENSE in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 #addin nuget:?package=Cake.Git&version=0.19.0
 #load "globals.cake"
+using System.Net.Http;
 
 var target = Argument("target", "Default");
 
@@ -38,3 +43,14 @@ Task("Common")
     {
         Information($"Version is {globals.version}");
     });
+
+Teardown(context => 
+{
+    var callbackUrl = globals.callbackUrl;
+    if( !string.IsNullOrEmpty(callbackUrl)) 
+    {
+        var client = new HttpClient();
+        var content = new FormUrlEncodedContent(new Dictionary<string,string>());
+        client.PostAsync(callbackUrl, content).Wait();
+    }
+});
