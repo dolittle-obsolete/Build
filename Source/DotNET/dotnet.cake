@@ -25,7 +25,7 @@ using System.Xml.XPath;
 Task("UpdateVersionForAllProjects")
     .Does(() => 
 {
-    var projectFiles = GetFiles($"{globals.source_path}/Source/**/*.csproj");
+    var projectFiles = GetFiles($"{globals.source_path}/{globals.base_path}/**/*.csproj");
     foreach( var projectFile in projectFiles )
     {
         var file = projectFile.FullPath;
@@ -54,27 +54,11 @@ Task("UpdateVersionForAllProjects")
         using( var writer = XmlWriter.Create(file, settings)) xml.Save(writer);
     }
 });
- 
-Task("Build")
-    .IsDependentOn("Common")
-    .IsDependentOn("UpdateVersionForAllProjects")
+
+
+Task("Package")
     .Does(() => 
 {
-    DotNetCoreRestore(globals.source_path);
-    DotNetCoreBuild(globals.source_path, new DotNetCoreBuildSettings 
-    {
-        Configuration = "Release",
-        NoRestore = true
-    });
-
-    var specFilesPattern = $"{globals.source_path}/Specifications/**/bin/**/*.Specs.dll";
-    var specFiles = GetFiles(specFilesPattern);
-    foreach( var spec in specFiles ) Information(spec);
-    DotNetCoreVSTest(specFiles,new DotNetCoreVSTestSettings 
-    {
-        Parallel = true
-    });
-
     var projectFiles = GetFiles($"{globals.source_path}/Source/**/*.csproj");
     foreach( var projectFile in projectFiles )
     {
@@ -88,4 +72,48 @@ Task("Build")
             OutputDirectory = "/packages"
         });
     }
+});
+
+Task("Publish")
+    .Does(() => 
+{
+    var projectFiles = GetFiles($"{globals.source_path}/Source/{folder_with_project_to_publish}/*.csproj");
+    foreach( var projectFile in projectFiles )
+    {
+        DotNetCorePublish(projectFile.FullPath, new DotNetCorePackSettings
+        {
+            Configuration = "Release",
+            NoRestore = true,
+            NoBuild = true,
+            OutputDirectory = "/publish"
+        });
+    }
+});
+
+
+Task("Build")
+    .IsDependentOn("Common")
+    .IsDependentOn("UpdateVersionForAllProjects")
+    .Does(() => 
+{
+    Information("Starting .NET Building");
+    DotNetCoreRestore(globals.source_path);
+    DotNetCoreBuild(globals.source_path, new DotNetCoreBuildSettings 
+    {
+        Configuration = "Release",
+        NoRestore = true
+    });
+
+    var specFilesPattern = $"{globals.source_path}/Specifications/**/bin/**/*.Specs.dll";
+    var specFiles = GetFiles(specFilesPattern);
+    foreach( var spec in specFiles ) Information(spec);
+    DotNetCoreVSTest(specFiles,new DotNetCoreVSTestSettings 
+    {
+        Logger = "trx;LogFileName=/testresults/results.trx",
+        Parallel = true
+    });
+
+    if( globals.package ) RunTarget("Package");
+    if( globals.publish ) RunTarget("Publish");
+
 });
